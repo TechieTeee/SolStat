@@ -1,2 +1,2 @@
 # SolStat
-Solana Rust ETL
+Solana Rust-based ETL Data Pipeline
