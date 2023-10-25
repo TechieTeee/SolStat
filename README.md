@@ -55,7 +55,7 @@ Feel free to make a contribution. To contribute to SolStat:
 To run the SolStat script:
 
 1. Clone the repository to your local machine.
-2. Set up the required environment variables, including the Solana endpoint URL.
+2. Set up the required environment variables, including the Solana endpoint URL. You have to add your own .env file and then use your own Solana Quicknode endpoint. This can be done with the free tier of Quicknode.
 3. Execute the script by running the following command:
 
 ```bash
