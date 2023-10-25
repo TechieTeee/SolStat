@@ -1,9 +1,11 @@
 use dotenv::dotenv;
 use std::env;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::commitment_config::CommitmentConfig; // Import CommitmentConfig
+use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::slot_history::Slot;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::thread::sleep;
+use std::time::Duration;
 
 fn main() {
     // Load environment variables from .env
@@ -16,7 +18,7 @@ fn main() {
     // Create an RpcClient to interact with the Solana network
     let rpc_client = RpcClient::new(solana_url.to_string());
 
-    // Calculate the slot for the current time minus 72 hours
+    // Calculate the slot for the current time minus 5 minutes
     let current_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -25,9 +27,9 @@ fn main() {
     // Use CommitmentConfig::finalized() to specify the commitment
     let start_slot = rpc_client.get_slot_with_commitment(CommitmentConfig::finalized()).unwrap();
     // Explicitly cast the result to u64 before assigning to end_slot
-    let end_slot = start_slot.saturating_sub((72 * 60 * 60 / 4) as u64);
+    let end_slot = start_slot.saturating_sub((5 * 60 / 4) as u64); // 5 minutes * 60 seconds / 4 seconds per slot
 
-    // Fetch Solana data within the specified time window
+    // Fetch Solana data within the 5-minute window
     let mut data_blocks = Vec::new();
     for slot in (end_slot..start_slot).rev() {
         // Use CommitmentConfig::finalized() to specify the commitment
