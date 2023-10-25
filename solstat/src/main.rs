@@ -1,36 +1,30 @@
+
 use dotenv::dotenv;
 use std::env;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
 use std::time::{SystemTime, UNIX_EPOCH};
-use csv::Writer;
-use std::fs::File;
 
 fn detect_patterns(data_blocks: &Vec<(u64, u64)>) -> Vec<String> {
     let mut detected_patterns = Vec::new();
-    
-    for (slot, slot_data) in data_blocks {
-        // Detect a pattern when the transaction count exceeds a certain threshold
-        if *slot_data > 1000 {
-            detected_patterns.push(format!("Pattern detected: High transaction count at slot {}", slot));
-        }
-        
-        // Detect a pattern when there's a sudden increase in transaction count
-        if data_blocks.len() >= 2 {
-            let previous_slot_data = data_blocks[data_blocks.len() - 2].1;
-            if *slot_data > 2 * previous_slot_data {
-                detected_patterns.push(format!("Pattern detected: Sudden increase in transaction count at slot {}", slot));
-            }
-        }
-        
-        // Detect a pattern when the transaction count is consistently decreasing
-        if data_blocks.len() >= 3 {
-            let previous_slot_data = data_blocks[data_blocks.len() - 3].1;
-            if *slot_data < previous_slot_data {
-                detected_patterns.push(format!("Pattern detected: Consistent decrease in transaction count at slot {}", slot));
-            }
-        }
 
+    let mut average_block_time = 0.0;
+    let mut block_time_sum = 0.0;
+    let mut block_count = 0;
+
+    for (slot, slot_data) in data_blocks {
+        // Update the average block time
+        block_count += 1;
+        block_time_sum += *slot_data as f64; // Use * to dereference the u64 slot_data
+        average_block_time = block_time_sum / block_count as f64;
+
+        // Detect a pattern when the average block time changes significantly
+        if block_count >= 10 {
+            let previous_average_block_time = block_time_sum / (block_count - 1) as f64;
+            if (average_block_time - previous_average_block_time).abs() > 0.5 {
+                detected_patterns.push(format!("Pattern detected: Significant change in average block time at slot {}", slot));
+            }
+        }
     }
 
     detected_patterns
@@ -47,53 +41,30 @@ fn main() {
     // Create an RpcClient to interact with the Solana network
     let rpc_client = RpcClient::new(solana_url.to_string());
 
-    // Specify the desired 5-minute interval in seconds
-    let interval_seconds = 5 * 60;
+    // Calculate the slot for the current time minus 5 minutes
+    let current_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as u64;
 
-    // Start collecting data within the 5-minute window
-    let start_time = SystemTime::now();
+    // Use CommitmentConfig::finalized() to specify the commitment
+    let start_slot = rpc_client.get_slot_with_commitment(CommitmentConfig::finalized()).unwrap();
+    // Explicitly cast the result to u64 before assigning to end_slot
+    let end_slot = start_slot.saturating_sub((5 * 60 / 4) as u64); // 5 minutes * 60 seconds / 4 seconds per slot
+
+    // Fetch Solana data within the 5-minute window
     let mut data_blocks = Vec::new();
-
-    loop {
-        // Calculate the slot for the current time minus 5 minutes
-        let current_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as u64;
-
+    for slot in (end_slot..start_slot).rev() {
         // Use CommitmentConfig::finalized() to specify the commitment
-        let start_slot = rpc_client.get_slot_with_commitment(CommitmentConfig::finalized()).unwrap();
-        // Explicitly cast the result to u64 before assigning to end_slot
-        let end_slot = start_slot.saturating_sub((5 * 60 / 4) as u64); // 5 minutes * 60 seconds / 4 seconds per slot
-
-        // Fetch Solana data within the specified time window
-        for slot in (end_slot..start_slot).rev() {
-            // Use CommitmentConfig::finalized() to specify the commitment
-            let slot_data = rpc_client.get_slot_with_commitment(CommitmentConfig::finalized()).unwrap();
-            data_blocks.push((slot, slot_data));
-        }
-
-        // Check if the 5-minute interval has passed
-        let elapsed_time = start_time.elapsed().unwrap().as_secs();
-        if elapsed_time >= interval_seconds {
-            break; // Exit the loop after 5 minutes
-        }
+        let slot_data = rpc_client.get_slot_with_commitment(CommitmentConfig::finalized()).unwrap();
+        data_blocks.push((slot, slot_data));
     }
 
-    // Detect patterns in the collected data
+    // Detect patterns in the data
     let detected_patterns = detect_patterns(&data_blocks);
-    
-    // Write the detected patterns to a log file
-    let mut log_writer = Writer::from_path("patterns.log").unwrap();
-    for pattern in detected_patterns {
-        log_writer.write_record(&[pattern]).unwrap();
-    }
-    
-    // Write the transformed data to a CSV file
-    let mut csv_writer = Writer::from_path("solana_data.csv").unwrap();
-    csv_writer.write_record(&["Slot", "Data"]).unwrap();
-    for (slot, slot_data) in &data_blocks {
-        csv_writer.write_record(&[slot.to_string(), slot_data.to_string()]).unwrap();
+
+    // Print detected patterns
+    for pattern in &detected_patterns {
+        println!("{}", pattern);
     }
 }
-
