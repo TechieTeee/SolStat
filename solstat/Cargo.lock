@@ -4185,6 +4185,7 @@ name = "solstat"
 version = "0.1.0"
 dependencies = [
  "arrow 10.0.0",
+ "csv",
  "dotenv",
  "duckdb",
  "solana-client",
