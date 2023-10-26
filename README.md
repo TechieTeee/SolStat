@@ -22,7 +22,7 @@ SolStat is built using the following technologies:
 
 - [Rust](https://www.rust-lang.org/): The core programming language used for the project.
 - [Solana](https://solana.com/): The high-performance blockchain platform from which data is extracted.
-- [Quicknode](https://www.quicknode.com/): The endpoint for accessing Solana data efficiently.
+- [Quicknode](https://www.quicknode.com/): The endpoint for accessing Solana data.
 
 ## Purpose of SolStat
 
