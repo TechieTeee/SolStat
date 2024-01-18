@@ -16,6 +16,12 @@ Solana Rust-based ETL Data Pipeline
 
 SolStat is an open-source Rust-based project designed to streamline the extraction, transformation, and loading (ETL) of data from the Solana blockchain. As Solana becomes a prominent platform for blockchain applications, a lack of dedicated data tools and comprehensive documentation poses a significant challenge for developers seeking to build data-driven applications. SolStat aims to address this gap by providing a versatile ETL tool with a focus on making it easier for developers to access and analyze Solana data.
 
+## Purpose
+
+- **Data Accessibility**: SolStat simplifies the extraction of data from the Solana blockchain, making it more accessible for developers.
+- **Documentation**: Comprehensive documentation is provided to guide developers through the process of collecting, storing, and analyzing Solana data.
+- **Inspiration**: SolStat aims to inspire new data-driven projects on Solana, fostering innovation in the blockchain space.
+
 ## Tech Stack
 
 SolStat is built using the following technologies:
@@ -24,11 +30,6 @@ SolStat is built using the following technologies:
 - [Solana](https://solana.com/): The high-performance blockchain platform from which data is extracted.
 - [Quicknode](https://www.quicknode.com/): The endpoint for accessing Solana data.
 
-## Purpose of SolStat
-
-- **Data Accessibility**: SolStat simplifies the extraction of data from the Solana blockchain, making it more accessible for developers.
-- **Documentation**: Comprehensive documentation is provided to guide developers through the process of collecting, storing, and analyzing Solana data.
-- **Inspiration**: SolStat aims to inspire new data-driven projects on Solana, fostering innovation in the blockchain space.
 
 ## Applications for Real-World Use Cases
 
